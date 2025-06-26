@@ -320,11 +320,11 @@ void agendamento_de_consultas() {
     
 
     printf("\nAgenda Cadastrada com Sucesso! \n"); // Adicionei \n para espaçamento
-    printf("Nome do funcionário: %s \n", f.nome_funcionario); // Corrigido para %s
-    printf("Data da consulta: %s \n", f.data_consulta); // Corrigido para %s
-    printf("Horario do agendamento: %s \n", f.horario_agendamento); // Corrigido para %s
-    printf("Endereco da Clinica: %s \n", f.endereco_da_clinica); // Corrigido para %s
-    printf("Informacoes do paciente: %s \n", f.informacoes_do_paciente); // corrigido para %s
+    printf("Nome do funcionário: %s\n", f.nome_funcionario); // Corrigido para %s
+    printf("Data da consulta: %s\n", f.data_consulta); // Corrigido para %s
+    printf("Horario do agendamento: %s\n", f.horario_agendamento); // Corrigido para %s
+    printf("Endereco da Clinica: %s\n", f.endereco_da_clinica); // Corrigido para %s
+    printf("Informacoes do paciente: %s\n", f.informacoes_do_paciente); // corrigido para %s
 
     pausar_execucao();
 }
