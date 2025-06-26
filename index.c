@@ -14,11 +14,12 @@
 
 #define MAX_FUNCIONARIOS 10
 #define MAX_PACIENTES 10
-#define AGENDAMENTOS 20
+#define MAX_AGENDAMENTOS 20
 
 //Arrays de armazenamento
 int total_funcionarios = 0;
 int total_pacientes = 0;
+int total_agendamentos = 0;
 
 typedef struct {
     char usuario[50];
@@ -40,7 +41,9 @@ typedef struct {
     char cpf[15]; // Ex: "123.456.789-00"
     char telefone[20];
     char endereco[150];
-    Usuario conta_pacientes;
+    int id;
+    int ativo;
+    Usuario conta_paciente;
 } Paciente;
 Paciente pacientes[MAX_PACIENTES];
 
@@ -52,7 +55,7 @@ typedef struct {
     int confirmado; // 0 para Não, 1 para Sim
     // Adicione outros campos relevantes para o agendamento
 } Agendamento;
-Agendamento agendamentos[AGENDAMENTOS];
+Agendamento agendamentos[MAX_AGENDAMENTOS];
 // --- Protótipos das Funções ---
 // Declarar todas as funções que serão usadas no programa.
 
@@ -337,10 +340,66 @@ void gerar_prontuario_eletronico() {
 
 void agendamento_de_consultas() {
     limpar_tela();
-    printf("--- Agendamento de Consultas (Funcionario) ---\n");
-    printf("Solicitar: Endereco da Clinica/Data/Horario/Informacoes do Paciente.\n");
-    // Coletar dados para o novo agendamento
-    printf("Agendamento Realizado com Sucesso!\n"); // Simulação de confirmação
+
+    // 1. Verificar se há espaço para novos agendamentos
+    if (total_agendamentos >= MAX_AGENDAMENTOS) {
+        printf("Limite de agendamentos atingido. Não é possível criar novos agendamentos.\n");
+        pausar_execucao();
+        return;
+    }
+
+    Agendamento novo_agendamento;
+
+    printf("--- Agendamento de Consultas ---\n");
+
+    // 2. Coletar o CPF do paciente
+    printf("CPF do Paciente para o agendamento (Ex: 123.456.789-00): ");
+    fgets(novo_agendamento.cpf_paciente, sizeof(novo_agendamento.cpf_paciente), stdin);
+    novo_agendamento.cpf_paciente[strcspn(novo_agendamento.cpf_paciente, "\n")] = 0;
+
+    // Opcional: Aqui você pode adicionar uma lógica para verificar se o CPF existe no array de pacientes
+    int paciente_encontrado = 0;
+    for (int i = 0; i < total_pacientes; i++) {
+        if (strcmp(pacientes[i].cpf, novo_agendamento.cpf_paciente) == 0 && pacientes[i].ativo == 1) {
+            paciente_encontrado = 1;
+            break;
+        }
+    }
+    if (!paciente_encontrado) {
+        printf("ERRO: Paciente com o CPF informado não encontrado ou inativo.\n");
+        pausar_execucao();
+        return;
+    }
+
+    // 3. Coletar a data
+    printf("Data do agendamento (DD/MM/AAAA): ");
+    fgets(novo_agendamento.data, sizeof(novo_agendamento.data), stdin);
+    novo_agendamento.data[strcspn(novo_agendamento.data, "\n")] = 0;
+
+    // 4. Coletar o horário
+    printf("Horário do agendamento (HH:MM): ");
+    fgets(novo_agendamento.horario, sizeof(novo_agendamento.horario), stdin);
+    novo_agendamento.horario[strcspn(novo_agendamento.horario, "\n")] = 0;
+
+    // 5. Coletar a descrição
+    printf("Descrição breve do agendamento/consulta: ");
+    fgets(novo_agendamento.descricao, sizeof(novo_agendamento.descricao), stdin);
+    novo_agendamento.descricao[strcspn(novo_agendamento.descricao, "\n")] = 0;
+
+    // 6. Definir o agendamento como não confirmado inicialmente
+    novo_agendamento.confirmado = 0; // Por padrão, não confirmado
+
+    // 7. Armazenar o novo agendamento no array global
+    agendamentos[total_agendamentos++] = novo_agendamento;
+
+    printf("\nAgendamento Cadastrado com Sucesso!\n");
+    printf("--- Detalhes do Agendamento ---\n");
+    printf("CPF do Paciente: %s\n", novo_agendamento.cpf_paciente);
+    printf("Data: %s\n", novo_agendamento.data);
+    printf("Horário: %s\n", novo_agendamento.horario);
+    printf("Descrição: %s\n", novo_agendamento.descricao);
+    printf("Status: %s\n", novo_agendamento.confirmado == 1 ? "Confirmado" : "Não Confirmado");
+
     pausar_execucao();
 }
 
@@ -385,9 +444,42 @@ void area_do_paciente_funcionario() {
 
 void cadastro_de_pacientes() {
     limpar_tela();
-    printf("--- Cadastro de Pacientes ---\n");
-    printf("Lógica para adicionar um novo paciente ao sistema.\n");
-    // Coletar nome, CPF, telefone, endereço, etc.
+    
+    if(total_pacientes >= MAX_PACIENTES){
+        printf("Limite de pacientes atigindo \n");
+        return;
+    }
+    Paciente P;
+    P.id = total_pacientes  + 1;
+    P.ativo = 1;
+
+    printf("Nome do Paciente: \n"); //nome do Paciente
+    fgets(P.nome, sizeof(P.nome), stdin);
+    P.nome[strcspn(P.nome, "\n")] = 0;
+
+    printf("CPF do Paciente: \n"); //email do Paciente
+    fgets(P.cpf, sizeof(P.cpf), stdin);
+    P.cpf[strcspn(P.cpf, "\n")] = 0;
+
+    printf("Usuário do Paciente: \n"); //usuario 
+    fgets(P.conta_paciente.usuario, sizeof(P.conta_paciente.usuario), stdin);
+    P.conta_paciente.usuario[strcspn(P.conta_paciente.usuario, "\n")] = 0;
+
+    printf("Senha do Paciente: \n"); //senha
+    fgets(P.conta_paciente.senha, sizeof(P.conta_paciente.senha), stdin);
+    P.conta_paciente.senha[strcspn(P.conta_paciente.senha, "\n")] = 0;
+
+    P.conta_paciente.tipo_acesso = 1; // 1=Paciente/2=Funcionario
+
+    pacientes[total_pacientes++] = P;
+
+    printf("\nPaciente Cadastrado com Sucesso! \n"); // Adicionei \n para espaçamento
+    printf("ID do Paciente: %d \n", P.id); // Imprimir o ID
+    printf("Nome do Paciente: %s \n", P.nome); // Corrigido para %s
+    printf("CPF do Paciente: %s \n", P.cpf); // Corrigido para %s
+    printf("Usuário do Paciente: %s \n", P.conta_paciente.usuario); // Corrigido para %s
+    printf("Senha do Paciente: %s \n", P.conta_paciente.senha); // Corrigido para %s
+
     pausar_execucao();
 }
 
@@ -463,7 +555,7 @@ void criar_conta_funcionarios() {
     printf("Email do funcionário: %s \n", f.email_funcionario); // Corrigido para %s
     printf("Usuário do funcionário: %s \n", f.conta_funcionario.usuario); // Corrigido para %s
     printf("Senha do funcionário: %s \n", f.conta_funcionario.senha); // Corrigido para %s
-    
+
     // fim do exemplo
 
     // A linha "Informações do cadastro" é um pouco redundante aqui, mas se quiser mantê-la:
