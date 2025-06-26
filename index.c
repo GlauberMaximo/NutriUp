@@ -74,8 +74,6 @@ void confirmar_agendamento(const char cpf_paciente[]);
 
 // Funções de Acesso Funcionários
 void exibir_agendamentos_funcionarios();
-void cancelar_remarcar_agendamentos();
-void realizar_consulta();
 void gerar_prontuario_eletronico();
 void agendamento_de_consultas(); // Novo Agendamento (endereço, data, horário, info paciente)
 void area_do_paciente_funcionario(); // Sub-menu da área do paciente para funcionários
@@ -285,49 +283,23 @@ void confirmar_agendamento(const char cpf_paciente[]) {
 
 // Funções de Acesso Funcionários (Implementações Simplificadas)
 void exibir_agendamentos_funcionarios() {
-    int escolha;
-    do {
-        limpar_tela();
-        printf("--- Exibir Agendamentos (Funcionario) ---\n");
-        printf("1. Cancelar/Remarcar Agendamentos\n");
-        printf("2. Realizar Consulta\n");
-        printf("0. Voltar ao Menu de Funcionarios\n");
-        printf("-----------------------------------------\n");
-        printf("Escolha uma opcao: ");
-        scanf("%d", &escolha);
-        while (getchar() != '\n'); // Limpa o buffer
+    limpar_tela();
+    printf("--- Lista de Agendamentos ---\n");
 
-        switch (escolha) {
-            case 1:
-                cancelar_remarcar_agendamentos();
-                break;
-            case 2:
-                realizar_consulta();
-                break;
-            case 0:
-                printf("Voltando...\n");
-                break;
-            default:
-                exibir_mensagem_erro("Opcao invalida. Tente novamente.");
-                break;
+    if (total_agendamentos == 0) {
+        printf("Nenhum agendamento cadastrado no momento.\n");
+    } else {
+        printf("%-15s %-12s %-8s %-10s %s\n", "CPF do Paciente", "Data", "Horário", "Status", "Descrição");
+        printf("--------------------------------------------------------------------------------\n");
+        for (int i = 0; i < total_agendamentos; i++) {
+            printf("%-15s %-12s %-8s %-10s %s\n",
+                   agendamentos[i].cpf_paciente,
+                   agendamentos[i].data,
+                   agendamentos[i].horario,
+                   agendamentos[i].confirmado == 1 ? "Confirmado" : "Pendente",
+                   agendamentos[i].descricao);
         }
-        pausar_execucao();
-    } while (escolha != 0);
-}
-
-void cancelar_remarcar_agendamentos() {
-    limpar_tela();
-    printf("--- Cancelar/Remarcar Agendamentos ---\n");
-    printf("Lógica para cancelar ou remarcar agendamentos por um funcionário.\n");
-    pausar_execucao();
-}
-
-void realizar_consulta() {
-    limpar_tela();
-    printf("--- Realizar Consulta ---\n");
-    printf("Aqui seria o fluxo para o funcionário registrar uma consulta.\n");
-    // Após a consulta, você pode chamar gerar_prontuario_eletronico()
-    gerar_prontuario_eletronico(); // Chamada dentro do fluxo, como no fluxograma
+    }
     pausar_execucao();
 }
 
@@ -339,6 +311,7 @@ void gerar_prontuario_eletronico() {
 }
 
 void agendamento_de_consultas() {
+    int c;
     limpar_tela();
 
     // 1. Verificar se há espaço para novos agendamentos
@@ -375,11 +348,13 @@ void agendamento_de_consultas() {
     printf("Data do agendamento (DD/MM/AAAA): ");
     fgets(novo_agendamento.data, sizeof(novo_agendamento.data), stdin);
     novo_agendamento.data[strcspn(novo_agendamento.data, "\n")] = 0;
+    while ((c = getchar()) != '\n' && c != EOF); // Limpa o buffer
 
     // 4. Coletar o horário
     printf("Horário do agendamento (HH:MM): ");
     fgets(novo_agendamento.horario, sizeof(novo_agendamento.horario), stdin);
     novo_agendamento.horario[strcspn(novo_agendamento.horario, "\n")] = 0;
+    while ((c = getchar()) != '\n' && c != EOF); // Limpa o buffer
 
     // 5. Coletar a descrição
     printf("Descrição breve do agendamento/consulta: ");
@@ -398,7 +373,7 @@ void agendamento_de_consultas() {
     printf("Data: %s\n", novo_agendamento.data);
     printf("Horário: %s\n", novo_agendamento.horario);
     printf("Descrição: %s\n", novo_agendamento.descricao);
-    printf("Status: %s\n", novo_agendamento.confirmado == 1 ? "Confirmado" : "Não Confirmado");
+    printf("Status: %s\n", novo_agendamento.confirmado == 1 ? "Confirmado" : "Pendente");
 
     pausar_execucao();
 }
@@ -485,19 +460,68 @@ void cadastro_de_pacientes() {
 
 void listar_pacientes() {
     limpar_tela();
-    printf("--- Listar Pacientes ---\n");
-    printf("Lógica para exibir uma lista de todos os pacientes cadastrados.\n");
+    printf("--- Listagem de Pacientes ---\n");
+
+    if (total_pacientes == 0) {
+        printf("Nenhum paciente cadastrado no momento.\n");
+    } else {
+        // Cabeçalho das colunas
+        // Ajuste os números (ex: %-5s, %-30s) conforme o tamanho máximo esperado para cada campo
+        printf("%-5s %-30s %-15s %-15s %-40s %-20s %-8s %-20s\n",
+               "ID", "Nome", "CPF", "Telefone", "Endereco", "Usuario", "Status", "Senha");
+        printf("------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------\n");
+
+        for (int i = 0; i < total_pacientes; i++) {
+            printf("%-5d %-30s %-15s %-15s %-40s %-20s %-8s %-20s\n",
+                   pacientes[i].id,
+                   pacientes[i].nome,
+                   pacientes[i].cpf,
+                   pacientes[i].telefone,
+                   pacientes[i].endereco,
+                   pacientes[i].conta_paciente.usuario,
+                   pacientes[i].ativo == 1 ? "Ativo" : "Inativo",
+                   pacientes[i].conta_paciente.senha);
+        }
+    }
     pausar_execucao();
 }
 
 void listar_pacientes_por_cpf() {
     char cpf_busca[15];
     limpar_tela();
-    printf("--- Listar Pacientes por CPF ---\n");
-    printf("Digite o CPF do paciente para buscar: ");
-    scanf("%14s", cpf_busca);
-    while (getchar() != '\n'); // Limpa o buffer
-    printf("Lógica para buscar e exibir dados do paciente com CPF: %s\n", cpf_busca);
+    printf("--- Listar Paciente por CPF ---\n");
+    printf("Digite o CPF do paciente para buscar (Ex: 123.456.789-00): ");
+    fgets(cpf_busca, sizeof(cpf_busca), stdin);
+    cpf_busca[strcspn(cpf_busca, "\n")] = 0; // Remove o '\n'
+
+    int paciente_encontrado = 0; // Flag para verificar se o paciente foi encontrado
+
+    // Cabeçalho das colunas (mesmo da listagem geral de pacientes)
+    printf("\n%-5s %-30s %-15s %-15s %-40s %-20s %-8s %-20s\n",
+           "ID", "Nome", "CPF", "Telefone", "Endereco", "Usuario", "Status", "Senha");
+    printf("------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------\n");
+
+    for (int i = 0; i < total_pacientes; i++) {
+        if (strcmp(pacientes[i].cpf, cpf_busca) == 0) {
+            // Paciente encontrado, exibe os detalhes
+            printf("%-5d %-30s %-15s %-15s %-40s %-20s %-8s %-20s\n",
+                   pacientes[i].id,
+                   pacientes[i].nome,
+                   pacientes[i].cpf,
+                   pacientes[i].telefone,
+                   pacientes[i].endereco,
+                   pacientes[i].conta_paciente.usuario,
+                   pacientes[i].ativo == 1 ? "Ativo" : "Inativo",
+                   pacientes[i].conta_paciente.senha);
+            paciente_encontrado = 1;
+            break; // Sai do loop assim que encontrar o paciente
+        }
+    }
+
+    if (!paciente_encontrado) {
+        printf("\nPaciente com o CPF '%s' não encontrado.\n", cpf_busca);
+    }
+
     pausar_execucao();
 }
 
@@ -516,7 +540,7 @@ void acessar_prontuario_do_paciente() {
 void criar_conta_funcionarios() {
     limpar_tela();
     if (total_funcionarios >= MAX_FUNCIONARIOS){
-        printf("Limite de funcionários atingido.\n"); // Adicionei \n para melhor formatação
+        printf("Limite de funcionários atingido.\n");
         return;
     }
 
