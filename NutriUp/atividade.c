@@ -262,40 +262,21 @@ void confirmar_agendamento(const char cpf_paciente[]) {
     printf("--- Confirmar Agendamento (Paciente: %s) ---\n", cpf_paciente);
     printf("Aqui o paciente poderia confirmar um agendamento existente.\n");
     // Lógica para permitir ao paciente confirmar um agendamento
-    pausar_execucao();
+    pausar_execucao();                                              
 }
 
 // Funções de Acesso Funcionários (Implementações Simplificadas)
-void exibir_agendamentos_funcionarios() {
-    int escolha;
-    do {
-        limpar_tela();
-        printf("--- Exibir Agendamentos (Funcionario) ---\n");
-        printf("1. Cancelar/Remarcar Agendamentos\n");
-        printf("2. Realizar Consulta\n");
-        printf("0. Voltar ao Menu de Funcionarios\n");
-        printf("-----------------------------------------\n");
-        printf("Escolha uma opcao: ");
-        scanf("%d", &escolha);
-        while (getchar() != '\n'); // Limpa o buffer
-
-        switch (escolha) {
-            case 1:
-                cancelar_remarcar_agendamentos();
-                break;
-            case 2:
-                realizar_consulta();
-                break;
-            case 0:
-                printf("Voltando...\n");
-                break;
-            default:
-                exibir_mensagem_erro("Opcao invalida. Tente novamente.");
-                break;
-        }
-        pausar_execucao();
-    } while (escolha != 0);
+void exibir_agendamentos_funcionarios
+    char agendamentos[30] = {
+        printf ("Lista de agendamento: \n");
+   for (int i = 0; i < total_agendamentos; i++) {
+    printf("%d. %s\n", i + 1, agendamentos[i]);
 }
+
+     limpar_tela();
+    printf("--- Exibir Agendamento do Funcionario) ---\n");
+    printf("Solicitar: Endereco da Clinica/Data/Horario/Informacoes do Paciente.\n");
+    // Coletar dados para o novo agendamento
 
 void cancelar_remarcar_agendamentos() {
     limpar_tela();
