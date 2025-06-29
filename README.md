@@ -1,4 +1,3 @@
-#NutriUp
 **SENAC DF – Centro de Educação Profissional Jó Rufino e Carlos Aguiar – Taguatinga**  
 **Curso:** Técnico em Desenvolvimento de Sistemas  
 **Turma:** 2025.08.53  
