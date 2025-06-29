@@ -12,14 +12,16 @@
 // Estas estruturas representam os "objetos" do seu sistema, como Pacientes, Funcionários, etc.
 // Use-as para armazenar dados de forma organizada.
 
-#define MAX_FUNCIONARIOS 10
-#define MAX_PACIENTES 10
-#define MAX_AGENDAMENTOS 20
+#define MAX_FUNCIONARIOS 100
+#define MAX_PACIENTES 100
+#define MAX_AGENDAMENTOS 400
+#define MAX_PRONTUARIOS 200
 
 //Arrays de armazenamento
 int total_funcionarios = 0;
 int total_pacientes = 0;
 int total_agendamentos = 0;
+int total_prontuarios = 0;
 
 typedef struct {
     char usuario[50];
@@ -56,15 +58,20 @@ typedef struct {
     // Adicione outros campos relevantes para o agendamento
 } Agendamento;
 Agendamento agendamentos[MAX_AGENDAMENTOS];
+
+typedef struct {
+    char exemplo[500];
+} Prontuario;
+Prontuario prontuarios[MAX_PRONTUARIOS];
 // --- Protótipos das Funções ---
 // Declarar todas as funções que serão usadas no programa.
 
 // Funções de Autenticação/Login
-int exibir_login();
+int exibir_login(char cpf_paciente_logado[]);
 int realizar_login(char usuario[], char senha[], Usuario *usuario_logado); // Retorna o tipo de acesso
 
 // Menus Principais
-void menu_paciente();
+void menu_paciente(const char cpf_paciente[]);
 void menu_funcionarios();
 void menu_administradores();
 
@@ -90,20 +97,20 @@ void deletar_conta_funcionarios();
 void limpar_tela();
 void pausar_execucao();
 void exibir_mensagem_erro(const char *mensagem);
-// Poderíamos ter funções para carregar/salvar dados em arquivos (ex: carregar_usuarios(), salvar_agendamentos())
 
 // --- Função Principal (main) ---
 int main() {
     int tipo_acesso_logado; // 1: Paciente, 2: Funcionário, 3: Administrador
+    char cpf_paciente_logado[15] = "";
     do {
         limpar_tela();
-        tipo_acesso_logado = exibir_login(); // Chama a tela de login
+        tipo_acesso_logado = exibir_login(cpf_paciente_logado); // Chama a tela de login
 
         switch (tipo_acesso_logado) {
             case 1: // Acesso Paciente
                 printf("Login de Paciente realizado com sucesso!\n");
                 pausar_execucao();
-                menu_paciente();
+                menu_paciente(cpf_paciente_logado);
                 break;
             case 2: // Acesso Funcionários
                 printf("Login de Funcionario realizado com sucesso!\n");
@@ -131,10 +138,9 @@ int main() {
 // --- Implementação das Funções ---
 
 // Funções de Autenticação/Login
-int exibir_login() {
+int exibir_login(char cpf_paciente_logado[]) {
     char usuario_input[50];
     char senha_input[50];
-    Usuario usuario_autenticado; // Estrutura para armazenar o usuário se o login for bem-sucedido
 
     printf("--- Tela de Login ---\n");
     printf("Usuario: ");
@@ -145,29 +151,37 @@ int exibir_login() {
     // Limpa o buffer do teclado
     while (getchar() != '\n');
 
-    // Aqui você implementaria a lógica de verificação de usuário e senha.
-    // Isso envolveria ler de um arquivo ou um banco de dados de usuários.
-    // Por simplicidade, vou usar um exemplo fixo.
+    // Verifica admin fixo
     if (strcmp(usuario_input, "admin") == 0 && strcmp(senha_input, "admin123") == 0) {
         return 3; // Administrador
-    } else if (strcmp(usuario_input, "func") == 0 && strcmp(senha_input, "func123") == 0) {
-        return 2; // Funcionário
-    } else if (strcmp(usuario_input, "paciente") == 0 && strcmp(senha_input, "paciente123") == 0) {
-        return 1; // Paciente
-    } else {
-        return -1; // Login falhou
     }
+
+    // Verifica funcionários cadastrados
+    for (int i = 0; i < total_funcionarios; i++) {
+        if (funcionarios[i].ativo_funcionario == 1 &&
+            strcmp(funcionarios[i].conta_funcionario.usuario, usuario_input) == 0 &&
+            strcmp(funcionarios[i].conta_funcionario.senha, senha_input) == 0) {
+            return 2; // Funcionário
+        }
+    }
+
+    // Verifica pacientes cadastrados
+    for (int i = 0; i < total_pacientes; i++) {
+        if (pacientes[i].ativo == 1 &&
+            strcmp(pacientes[i].conta_paciente.usuario, usuario_input) == 0 &&
+            strcmp(pacientes[i].conta_paciente.senha, senha_input) == 0) {
+            strcpy(cpf_paciente_logado, pacientes[i].cpf); // Salva o CPF do paciente logado
+            return 1; // Paciente
+        }
+    }
+
+    // Se não encontrou
+    return -1;
 }
 
 // Menus Principais
-void menu_paciente() {
+void menu_paciente(const char cpf_paciente[]) {
     int escolha;
-    char cpf_paciente[15]; // Supondo que o CPF do paciente logado esteja disponível aqui
-
-    // Em um sistema real, o CPF do paciente logado seria passado como parâmetro ou obtido de forma segura.
-    printf("Informe seu CPF para acesso (apenas para simulação): ");
-    scanf("%14s", cpf_paciente);
-    while (getchar() != '\n'); // Limpa o buffer
 
     do {
         limpar_tela();
@@ -268,16 +282,63 @@ void menu_administradores() {
 void exibir_agendamentos_paciente(const char cpf_paciente[]) {
     limpar_tela();
     printf("--- Meus Agendamentos (Paciente: %s) ---\n", cpf_paciente);
-    printf("Aqui seriam listados os agendamentos do paciente com o CPF: %s\n", cpf_paciente);
-    // Lógica para carregar e exibir agendamentos do paciente
+
+    int encontrou = 0;
+    for (int i = 0; i < total_agendamentos; i++) {
+        if (strcmp(agendamentos[i].cpf_paciente, cpf_paciente) == 0) {
+            printf("Data: %s | Horário: %s | Status: %s | Descrição: %s\n",
+                   agendamentos[i].data,
+                   agendamentos[i].horario,
+                   agendamentos[i].confirmado == 1 ? "Confirmado" : "Pendente",
+                   agendamentos[i].descricao);
+            encontrou = 1;
+        }
+    }
+    if (!encontrou) {
+        printf("Nenhum agendamento encontrado para este CPF.\n");
+    }
     pausar_execucao();
 }
 
 void confirmar_agendamento(const char cpf_paciente[]) {
     limpar_tela();
     printf("--- Confirmar Agendamento (Paciente: %s) ---\n", cpf_paciente);
-    printf("Aqui o paciente poderia confirmar um agendamento existente.\n");
-    // Lógica para permitir ao paciente confirmar um agendamento
+
+    int indices[MAX_AGENDAMENTOS];
+    int count = 0;
+    // Listar agendamentos do paciente
+    for (int i = 0; i < total_agendamentos; i++) {
+        if (strcmp(agendamentos[i].cpf_paciente, cpf_paciente) == 0) {
+            printf("%d) Data: %s | Horário: %s | Status: %s | Descrição: %s\n",
+                   count + 1,
+                   agendamentos[i].data,
+                   agendamentos[i].horario,
+                   agendamentos[i].confirmado == 1 ? "Confirmado" : "Pendente",
+                   agendamentos[i].descricao);
+            indices[count] = i;
+            count++;
+        }
+    }
+    if (count == 0) {
+        printf("Nenhum agendamento encontrado para este CPF.\n");
+        pausar_execucao();
+        return;
+    }
+
+    int escolha;
+    printf("\nDigite o número do agendamento que deseja confirmar (0 para cancelar): ");
+    scanf("%d", &escolha);
+    while (getchar() != '\n');
+
+    if (escolha > 0 && escolha <= count) {
+        int idx = indices[escolha - 1];
+        agendamentos[idx].confirmado = 1;
+        printf("Agendamento confirmado com sucesso!\n");
+    } else if (escolha == 0) {
+        printf("Operação cancelada.\n");
+    } else {
+        printf("Opção inválida.\n");
+    }
     pausar_execucao();
 }
 
@@ -585,13 +646,13 @@ void criar_conta_funcionarios() {
     // A linha "Informações do cadastro" é um pouco redundante aqui, mas se quiser mantê-la:
     printf("\nInformações do cadastro\n"); // Adicionei \n para espaçamento
 
-    pausar_execucao();
+    pausar_execucao(); 
 }
 
 void deletar_conta_funcionarios() {
     limpar_tela();
     printf("--- Deletar Conta de Funcionarios ---\n");
-    printf("Lógica para remover um usuário/funcionário existente.\n");
+    
     pausar_execucao();
 }
 
