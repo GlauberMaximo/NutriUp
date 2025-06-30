@@ -55,12 +55,12 @@ typedef struct {
     char horario[6]; // Ex: "HH:MM"
     char descricao[200]; // Descrição do agendamento/consulta
     int confirmado; // 0 para Não, 1 para Sim
-    // Adicione outros campos relevantes para o agendamento
 } Agendamento;
 Agendamento agendamentos[MAX_AGENDAMENTOS];
 
 typedef struct {
-    char exemplo[500];
+    char texto[1000];
+    char cpf_paciente[15];
 } Prontuario;
 Prontuario prontuarios[MAX_PRONTUARIOS];
 // --- Protótipos das Funções ---
@@ -345,30 +345,77 @@ void confirmar_agendamento(const char cpf_paciente[]) {
 // Funções de Acesso Funcionários (Implementações Simplificadas)
 void exibir_agendamentos_funcionarios() {
     limpar_tela();
-    printf("--- Lista de Agendamentos ---\n");
+    if (totalAgendamentos == 0) {
+        printf("Nenhum agendamento encontrado.\n");
+        return;
+    }
 
-    if (total_agendamentos == 0) {
-        printf("Nenhum agendamento cadastrado no momento.\n");
-    } else {
-        printf("%-15s %-12s %-8s %-10s %s\n", "CPF do Paciente", "Data", "Horário", "Status", "Descrição");
-        printf("--------------------------------------------------------------------------------\n");
-        for (int i = 0; i < total_agendamentos; i++) {
-            printf("%-15s %-12s %-8s %-10s %s\n",
-                   agendamentos[i].cpf_paciente,
-                   agendamentos[i].data,
-                   agendamentos[i].horario,
-                   agendamentos[i].confirmado == 1 ? "Confirmado" : "Pendente",
-                   agendamentos[i].descricao);
+    printf("\n--- Lista de Agendamentos ---\n");
+    for (int i = 0; i < totalAgendamentos; i++) {
+        printf("%d. Nome: %s | CPF: %s | Data: %s | Hora: %s\n", 
+               i + 1, 
+               agendamentos[i].paciente.nome, 
+               agendamentos[i].paciente.cpf, 
+               agendamentos[i].data, 
+               agendamentos[i].hora);
+    }
+
+    int escolha;
+    printf("\nDigite o número do agendamento para gerar prontuário (ou 0 para voltar): ");
+    scanf("%d", &escolha);
+
+    if (escolha <= 0 || escolha > totalAgendamentos) {
+        printf("Voltando ao menu...\n");
+        return;
+    }
+
+    int index = escolha - 1;
+    printf("Você selecionou o agendamento de %s. Deseja gerar prontuário? (1 - Sim | 0 - Não): ", agendamentos[index].paciente.nome);
+    
+    int opcao;
+    scanf("%d", &opcao);
+
+    if (opcao == 1) {
+        if (totalProntuarios < MAX_USUARIOS) {
+            strcpy(prontuarios[totalProntuarios].texto, "Consulta realizada com perguntas padrão e respostas do paciente.");
+            strcpy(prontuarios[totalProntuarios].cpf_paciente, agendamentos[index].paciente.cpf);
+            totalProntuarios++;
+            printf("Prontuário gerado com sucesso!\n");
+        } else {
+            printf("Limite de prontuários atingido.\n");
         }
+    } else {
+        printf("Prontuário não gerado.\n");
     }
     pausar_execucao();
 }
 
 void gerar_prontuario_eletronico() {
-    printf("\n--- Gerar Prontuario Eletronico ---\n");
-    printf("Lógica para criar ou atualizar o prontuário eletrônico do paciente.\n");
-    // Esta função pode ser chamada dentro de "Realizar Consulta" ou de forma independente
-    // pausar_execucao(); // Comentado pois é chamada de dentro de outra função
+    limpar_tela();
+    if (totalProntuarios == 0) {
+        printf("Nenhum prontuário encontrado.\n");
+        return;
+    }
+
+    printf("\n--- Prontuários Cadastrados ---\n");
+    for (int i = 0; i < totalProntuarios; i++) {
+        printf("%d. CPF do Paciente: %s\n", i + 1, prontuarios[i].cpf_paciente);
+    }
+
+    int escolha;
+    printf("\nDigite o número do prontuário que deseja visualizar (ou 0 para voltar): ");
+    scanf("%d", &escolha);
+
+    if (escolha <= 0 || escolha > totalProntuarios) {
+        printf("Voltando ao menu...\n");
+        return;
+    }
+
+    int index = escolha - 1;
+    printf("\n--- Detalhes do Prontuário ---\n");
+    printf("CPF do Paciente: %s\n", prontuarios[index].cpf_paciente);
+    printf("Conteúdo do Prontuário:\n%s\n", prontuarios[index].texto);
+    pausar_execucao();
 }
 
 void agendamento_de_consultas() {
